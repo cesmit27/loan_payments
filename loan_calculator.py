@@ -6,9 +6,9 @@ my_loans = [
 ]
 my_monthly_payment = 225.03
 
-def float_input(prompt, default=None):
+def float_input(x, default=None):
     while True:
-        user_input = input(f"{prompt} (Default = {default}) ")
+        user_input = input(f"{x} (Default = {default}) ")
         if user_input == '' and default is not None:
             return default
         try:
@@ -16,9 +16,9 @@ def float_input(prompt, default=None):
         except ValueError:
             print("Invalid input. Please enter a valid number.")
 
-def int_input(prompt, default=None):
+def int_input(x, default=None):
     while True:
-        user_input = input(f"{prompt} (Default = {default}) ")
+        user_input = input(f"{x} (Default = {default}) ")
         if user_input == '' and default is not None:
             return default
         try:
@@ -72,5 +72,10 @@ while remaining_loans > 0:
 
 total_amount_spent = total_monthly_payment * months
 
-print(f'\nPaying off this debt will take {months} months and will cost ${total_amount_spent:,.2f} in total, with ${total_interest_paid:,.2f} of that being interest.')
+years, months = divmod(months, 12)
+print(f"\nLoan Details:")
+print(f"Time to pay off: {years} years and {months} months")
+print(f"Total amount spent: ${total_amount_spent:,.2f}")
+print(f"Total interest paid: ${total_interest_paid:,.2f}")
+
 input("\nPress Enter to exit...")
