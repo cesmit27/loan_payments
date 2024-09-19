@@ -29,49 +29,48 @@ def int_input(prompt, default=None):
 num_loans = int_input("Enter the number of loans:", default=len(my_loans))
 
 loans = []
-
 for i in range(num_loans):
     print(f"\nLoan {i + 1}:")
     principal = float_input("Enter the principal amount: ", default=my_loans[i]["principal"] if i < len(my_loans) else None)
     annual_interest_rate = float_input("Enter the annual interest rate (as a percentage): ", default=my_loans[i]["annual_interest_rate"] if i < len(my_loans) else None)
     loans.append({"principal": principal, "annual_interest_rate": annual_interest_rate})
 
-total_payment = float_input("Enter your monthly payment amount: ", default=my_monthly_payment)
+total_monthly_payment = float_input("Enter your monthly payment amount: ", default=my_monthly_payment)
 
 total_interest_paid = 0
+remaining_loans = num_loans
+months = 0
 
-loan_data = []
+while remaining_loans > 0:
+    months += 1
+    total_paid_this_month = 0
 
-for loan in loans:
-    principal = loan["principal"]
-    annual_interest_rate = loan["annual_interest_rate"]
-    monthly_interest_rate = annual_interest_rate / 100 / 12
-    remaining_balance = principal
-    total_paid_for_loan = 0
-    months = 0
+    #Distribute total monthly payment equally among remaining loans
+    remaining_loan_indices = [i for i, loan in enumerate(loans) if loan["principal"] > 0]
+    monthly_payment_per_loan = total_monthly_payment / len(remaining_loan_indices)
 
-    while remaining_balance > 0:
-        interest = remaining_balance * monthly_interest_rate
-        principal_payment = total_payment - interest
+    for i in remaining_loan_indices:
+        loan = loans[i]
         
+        monthly_interest_rate = loan["annual_interest_rate"] / 100 / 12
+        interest = loan["principal"] * monthly_interest_rate
+        principal_payment = monthly_payment_per_loan - interest
+
         if principal_payment <= 0:
             print("Warning: Monthly payment is too low to cover the interest!")
             break
-        
-        if principal_payment > remaining_balance: #Makes it so it doesn't say total payment is more than it should be if your monthly payment is more than the outstanding balance in the final month
-            principal_payment = remaining_balance
-        
-        remaining_balance -= principal_payment
-        total_paid_for_loan += (principal_payment + interest)
-        months += 1
 
-    total_interest_paid += (total_paid_for_loan - principal)
-    
-    loan_data.append({"principal": principal, "months": months, "total_paid_for_loan": total_paid_for_loan})
+        if principal_payment > loan["principal"]: #Makes it so it doesn't say total payment is more than it should be if your monthly payment is more than the outstanding balance in the final month
+            principal_payment = loan["principal"]
 
-total_months = max(loan['months'] for loan in loan_data)
-total_amount_spent = sum(loan['total_paid_for_loan'] for loan in loan_data)
+        loan["principal"] -= principal_payment
+        total_interest_paid += interest
+        total_paid_this_month += (principal_payment + interest)
 
-print(f'\nPaying off this debt will take {total_months} months and will cost ${round(total_amount_spent, 2)} in total, with ${round(total_interest_paid, 2)} of that being interest.')
+        if loan["principal"] <= 0:
+            remaining_loans -= 1
 
+total_amount_spent = total_monthly_payment * months
+
+print(f'\nPaying off this debt will take {months} months and will cost ${total_amount_spent:,.2f} in total, with ${total_interest_paid:,.2f} of that being interest.')
 input("\nPress Enter to exit...")
